@@ -1,0 +1,4 @@
+.env
+fastapi/
+deploy-flask/
+__pycache__
