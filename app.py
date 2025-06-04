@@ -37,8 +37,8 @@ def fetch_last_60_days(symbol: str) -> np.ndarray:
 
 def predict_with_onnx(input_seq: np.ndarray) -> float:
     # ONNX expects input as a dict
-    input_name = onnx_session.get_inputs()[0].name
-    output = onnx_session.run(None, {input_name: input_seq})[0]
+    input_name = session.get_inputs()[0].name
+    output = session.run(None, {input_name: input_seq})[0]
     return output[0, 0]
 
 def forecast_symbol(symbol: str) -> Dict[str, float]:
