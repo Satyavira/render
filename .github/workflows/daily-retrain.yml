@@ -1,0 +1,55 @@
+name: Daily Model Fine-tuning
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 17 * * *'  # tiap hari jam 17:00 UTC / 00:00 WIB 
+
+jobs:
+  retrain-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+          fetch-depth: 0  # Ambil seluruh riwayat commit
+          ref: AI-10
+
+      - name: Pull LFS files
+        run: git lfs pull
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Run Retraining Script
+        run: python main.py
+
+      - name: Push to Hugging Face Model Repo
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+        run: |
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "github-actions"
+          git add .
+          git commit -m "Auto fine-tuning at $(date)"
+          git push https://SatyaVP:${HF_TOKEN}@huggingface.co/spaces/SatyaVP/FinCoach AI-10:main
+
+          git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} AI-10
