@@ -28,7 +28,7 @@ def make_prediction(symbol: str, window_size=30):
 
     predictions = {}
     current_input = input_seq.copy()
-    session = ort.InferenceSession(f"models/{symbol}_model.onnx")
+    session = ort.InferenceSession(f"onnx_models/{symbol}_model.onnx")
     input_name = session.get_inputs()[0].name
 
     for horizon_name, steps_ahead in forecast_days.items():
