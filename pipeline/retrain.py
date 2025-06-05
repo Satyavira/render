@@ -6,6 +6,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.metrics import MeanAbsoluteError, MeanAbsolutePercentageError
 import tf2onnx
+import onnx
 import tensorflow as tf
 import joblib
 
@@ -83,18 +84,19 @@ def retrain_model(ticker, df):
     model.save(model_path)
     print(f"Saved updated model to {model_path}")
 
-    # Export to ONNX
-    input_tensor = tf.keras.Input(shape=(WINDOW_SIZE, 1), name="input")
-    output_tensor = model(input_tensor)
-    func_model = tf.keras.Model(inputs=input_tensor, outputs=output_tensor)
+    # Simpan model dalam format onnx
+    model.output_names = ['output']
+    # Mendapatkan input shape dari model
+    input_shape = model.input_shape[1:] # Tidak Mengambil dimensi batch
 
-    onnx_path = os.path.join(EXPORT_ONNX_DIR, f"{ticker}_model.onnx")
-    spec = (tf.TensorSpec((None, WINDOW_SIZE, 1), tf.float32, name="input"),)
-    onnx_model, _ = tf2onnx.convert.from_keras(func_model, input_signature=spec, opset=13)
-    
-    with open(onnx_path, "wb") as f:
-        f.write(onnx_model.SerializeToString())
-    print(f"Exported ONNX model to {onnx_path}")
+    # Menetapkan input signature
+    input_signature = [tf.TensorSpec(shape=[None] + list(input_shape), dtype=tf.float64, name='input')]
+
+    # Konversi model Keras ke ONNX
+    onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature=input_signature)
+
+    # Simpan model ONNX
+    onnx.save_model(onnx_model, f"models/{ticker}_model.onnx")
 
 def main():
     os.makedirs(EXPORT_ONNX_DIR, exist_ok=True)
