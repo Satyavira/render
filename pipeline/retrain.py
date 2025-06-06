@@ -96,7 +96,8 @@ def retrain_model(ticker, df):
     onnx_model, _ = tf2onnx.convert.from_keras(model, input_signature=input_signature)
 
     # Simpan model ONNX
-    onnx.save_model(onnx_model, f"models/{ticker}_model.onnx")
+    onnx_model_path = os.path.join(EXPORT_ONNX_DIR, f"{ticker}_model.onnx")
+    onnx.save_model(onnx_model, onnx_model_path)
 
 def main():
     os.makedirs(EXPORT_ONNX_DIR, exist_ok=True)
