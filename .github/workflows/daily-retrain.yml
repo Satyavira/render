@@ -41,15 +41,19 @@ jobs:
       - name: Run Retraining Script
         run: python main.py
 
-      - name: Push to Hugging Face Model Repo
+      - name: Push to Hugging Face Model Repo and push to external Github Repo 
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
+          
           git add .
           git commit -m "Auto fine-tuning at $(date)"
           git push https://SatyaVP:${HF_TOKEN}@huggingface.co/spaces/SatyaVP/FinCoach AI-10:main
 
           git push https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }} AI-10
+
+          git push https://x-access-token:${PAT_TOKEN}@github.com/Fardan-Nurhidayat/fincoach.git AI-10:AI-10
