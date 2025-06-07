@@ -49,7 +49,8 @@ jobs:
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "github-actions"
-          
+          git config --unset-all http.https://github.com/.extraheader
+
           git add .
           git commit -m "Auto fine-tuning at $(date)"
           git push https://SatyaVP:${HF_TOKEN}@huggingface.co/spaces/SatyaVP/FinCoach AI-10:main
